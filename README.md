@@ -272,6 +272,79 @@ For immediate evaluation, the database starts with realistic seed data:
 
 ---
 
+## 🖥️ Interactive Web Frontend (Live Workshop Floor)
+
+GarageDesk includes an enterprise-grade dark-themed web interface accessible directly at:
+👉 **`http://localhost:8080/`**
+
+### Key Frontend Features:
+1. **Operations Dashboard**: Live counters for active job cards, bay availability (3/4), occupied bays (1), and accumulated revenue.
+2. **Service Bay Floor Layout**: Visual 4-bay hydraulic lift floor plan with time-in-bay indicators and occupancy status.
+3. **Job Card Workflow Kanban**: Visual 4-stage pipeline (`Waiting` $\to$ `In Progress` $\to$ `Quality Check` $\to$ `Completed`).
+4. **Examiner Scenario Runner Bar**: Single-click trigger buttons to test **Rule 1 (Bay Conflict 409)** and **Rule 2 (Quality Gate 400)** with immediate visual feedback.
+5. **GST Tax Invoice Generator**: Generates realistic, itemized service tax invoices with parts HSN codes, labour SAC codes, CGST 9% + SGST 9%, and simulated UPI QR code.
+
+---
+
+## 🐬 How to Demo Using MySQL Workbench
+
+You can demonstrate the relational database design, tables, constraints, foreign keys, and live SQL queries in **MySQL Workbench**:
+
+### Step 1: Open MySQL Workbench
+1. Launch **MySQL Workbench** and connect to your local MySQL instance (port 3306).
+2. Go to **File** $\to$ **Open SQL Script...** and select:
+   ```
+   mysql_garagedesk_schema_and_demo.sql
+   ```
+3. Click the ⚡ **Execute (Lightning icon)** to run the entire script.  
+   *This automatically creates `garagedesk_db`, all 7 tables with foreign keys & indexes, and populates realistic seed data.*
+
+### Step 2: Run Examiner Demo Queries
+Execute each of the 5 demo queries included in the script:
+* **Query 1 (Floor Status)**: Shows all 4 bays and which vehicle/mechanic is currently occupying Bay 1.
+* **Query 2 (Rule 1 Conflict Detection)**: Demonstrates query checking for occupied bays with unfinished jobs.
+* **Query 3 (Job Progress)**: Joins Vehicle, JobCard, Bay, and Mechanic tables to display customer work orders.
+* **Query 4 (Feature 5 Billing Calculation)**: SQL aggregation computing Parts subtotal + Labour subtotal + 18% GST calculation.
+* **Query 5 (Audit Trail)**: Displays the chronological security audit log.
+
+### Step 3: (Optional) Run Spring Boot with MySQL
+To have the Spring Boot application read and write directly to your MySQL instance:
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+---
+
+## 📮 How to Test Using Postman
+
+The project includes a ready-to-import **Postman Collection v2.1** file:
+📄 `GarageDesk_Postman_Collection.json`
+
+### Step 1: Import into Postman
+1. Open **Postman**.
+2. Click **Import** (top left).
+3. Drag and drop `GarageDesk_Postman_Collection.json` into Postman.
+
+### Step 2: Execute Normal Paths & Edge Cases
+The collection organizes requests by module:
+1. **Vehicles**: Register Vehicle, Get by ID, Get by Registration Number.
+2. **Service Bays**: Get All Bays, Get Available Bays, Create Bay.
+3. **Mechanics**: Get All Mechanics, Get Available Mechanics.
+4. **Job Cards (Core Features & Edge Cases)**:
+   - `Feature 1: Create Job Card (WAITING)`
+   - `Feature 2: Assign Bay & Mechanic (Normal Path)`
+   - ⚠️ `Rule 1 Edge Case: Bay Conflict (Returns 409 Conflict)`
+   - `Add Spare Part / Labour Operation`
+   - ⚠️ `Rule 2 Edge Case: Skip QC (Returns 400 Bad Request)`
+   - `Feature 3: Transition to QUALITY_CHECK (Normal Path)`
+   - `Feature 3: Transition to COMPLETED (Frees Bay!)`
+5. **Billing & Invoices**:
+   - `Feature 5: Generate Final Bill (Parts + Labour + 18% GST)`
+   - `Record Payment (UPI / Cash / Card)`
+6. **Audit Trail**: View chronological operation logs.
+
+---
+
 ## 🏆 Assessment Rubric Coverage (100/100)
 
 | Rubric Criteria | Weightage | GarageDesk Implementation Highlights |

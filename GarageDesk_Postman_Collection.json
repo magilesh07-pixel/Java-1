@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "GarageDesk — Vehicle Service Job Card & Bay Scheduling API",
+    "_postman_id": "7f8b8c20-1a2b-4c3d-8e4f-5a6b7c8d9e0f",
+    "description": "Postman Collection for Sri Eshwar College of Engineering Project Leap Question 67 (Student Reg No: 060).\nCovers all 5 core features, normal paths, and edge cases (Bay Conflict 409, Quality Check Gate 400).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Vehicles",
+      "item": [
+        {
+          "name": "Register New Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNumber\": \"TN-38-ZZ-9999\",\n  \"brand\": \"Mahindra\",\n  \"model\": \"XUV700 AX7\",\n  \"manufacturingYear\": 2023,\n  \"ownerName\": \"Kavitha Sundaram\",\n  \"ownerPhone\": \"9842100099\",\n  \"ownerEmail\": \"kavitha@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Get All Registered Vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle By Registration Plate",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/registration/TN-38-BZ-4521",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "registration", "TN-38-BZ-4521"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Service Bays",
+      "item": [
+        {
+          "name": "Get All Bays (with Occupancy Status)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bays",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bays"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Bays Only",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bays/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bays", "available"]
+            }
+          }
+        },
+        {
+          "name": "Create New Service Bay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bayNumber\": \"Bay 5\",\n  \"bayType\": \"EV Diagnostics & Battery Health\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bays",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bays"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Mechanics",
+      "item": [
+        {
+          "name": "Get All Mechanics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/mechanics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mechanics"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Mechanics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/mechanics/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mechanics", "available"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Job Cards & Scheduling (Core Requirements)",
+      "item": [
+        {
+          "name": "Feature 1: Create Job Card (WAITING)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": 2,\n  \"requestedServices\": \"Periodic 20,000 km Service, Engine Oil Flush, AC Filter Replacement\",\n  \"customerComplaints\": \"AC cooling is slow during peak afternoons\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards"]
+            }
+          }
+        },
+        {
+          "name": "Feature 2: Assign Bay & Mechanic (Normal Path)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bayId\": 2,\n  \"mechanicId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/2/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "2", "assign"]
+            },
+            "description": "Assigns Job #2 into Bay 2 (which is free) and technician Suresh Babu."
+          }
+        },
+        {
+          "name": "Rule 1 Edge Case: Bay Conflict (Should Fail with 409 Conflict)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bayId\": 1,\n  \"mechanicId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/2/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "2", "assign"]
+            },
+            "description": "Tests Business Rule 1: Attempting to assign Job #2 into Bay 1 (which is already occupied by Job #1) MUST return 409 Conflict!"
+          }
+        },
+        {
+          "name": "Add Spare Part to Job Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemName\": \"Mobil 1 ESP 5W-30 Fully Synthetic Engine Oil (4L)\",\n  \"itemType\": \"PART\",\n  \"quantity\": 1,\n  \"unitPrice\": 3200.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1", "items"]
+            }
+          }
+        },
+        {
+          "name": "Add Labour Charge to Job Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemName\": \"Brake Fluid Flush & Bleeding Labour\",\n  \"itemType\": \"LABOUR_SERVICE\",\n  \"quantity\": 1,\n  \"unitPrice\": 750.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1", "items"]
+            }
+          }
+        },
+        {
+          "name": "Rule 2 Edge Case: Skip QC (Should Fail with 400 Bad Request)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1", "status"]
+            },
+            "description": "Tests Business Rule 2: Attempting to move Job #1 directly from IN_PROGRESS to COMPLETED without passing QUALITY_CHECK MUST return 400 Bad Request!"
+          }
+        },
+        {
+          "name": "Feature 3: Transition to QUALITY_CHECK (Normal Path)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"QUALITY_CHECK\",\n  \"qualityCheckNotes\": \"Passed 24-point road test, brake pads at 8mm, fluid levels verified.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Feature 3: Transition to COMPLETED (After QC - Frees Bay!)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1", "status"]
+            },
+            "description": "Moves to COMPLETED now that QUALITY_CHECK has passed. Automatically sets Bay 1 to AVAILABLE!"
+          }
+        },
+        {
+          "name": "Get Job Card By ID (Full Details)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get All Job Cards (Filter by Status)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/job-cards?status=IN_PROGRESS",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-cards"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "IN_PROGRESS"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Billing & Invoices",
+      "item": [
+        {
+          "name": "Feature 5: Generate Final Bill (Parts + Labour + 18% GST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxRate\": 18.0,\n  \"discountAmount\": 0.0,\n  \"paymentMethod\": \"UPI\",\n  \"markAsPaid\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bills/job-card/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bills", "job-card", "1"]
+            }
+          }
+        },
+        {
+          "name": "Record Bill Payment (UPI / Cash / Card)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/bills/1/pay?paymentMethod=UPI",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bills", "1", "pay"],
+              "query": [
+                {
+                  "key": "paymentMethod",
+                  "value": "UPI"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Bills",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bills",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bills"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Audit Trail",
+      "item": [
+        {
+          "name": "Get System Audit Logs (Accountability)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit-logs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
