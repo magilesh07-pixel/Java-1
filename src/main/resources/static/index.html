@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GarageDesk — Enterprise Vehicle Service & Bay Scheduling System</title>
+  <meta name="description" content="Commercial Vehicle Service Job Card and Bay Scheduling System for Sri Eshwar College of Engineering Project Leap Assessment Question 67">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand-section">
+        <div class="brand-icon">🏎️</div>
+        <div class="brand-details">
+          <h1>GarageDesk</h1>
+          <span class="brand-badge">Workshop OS · Q67</span>
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li>
+          <a class="nav-link active" data-tab="dashboard" id="nav-dashboard">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>Live Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-tab="bays" id="nav-bays">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <span>Bay Floor Layout</span>
+            <span class="nav-link-badge" id="sidebar-bays-badge">4 Bays</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-tab="jobs" id="nav-jobs">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <span>Job Card Workflow</span>
+            <span class="nav-link-badge" id="sidebar-jobs-badge">0</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-tab="vehicles" id="nav-vehicles">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            <span>Vehicle Fleet</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-tab="invoices" id="nav-invoices">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/></svg>
+            <span>Billing & Invoices</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-tab="audit" id="nav-audit">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Audit Trail</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <strong>Sri Eshwar College of Engineering</strong>
+        <span>Autonomous · Reg No: 060</span>
+        <div style="margin-top:6px; display:flex; gap:8px;">
+          <a href="/swagger-ui.html" target="_blank" style="color:var(--accent-cyan); text-decoration:none; font-weight:600; font-size:11px;">📖 Swagger ↗</a>
+          <span style="color:var(--text-muted)">·</span>
+          <a href="/h2-console" target="_blank" style="color:var(--accent-cyan); text-decoration:none; font-weight:600; font-size:11px;">🗄️ H2 DB ↗</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <main class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-block">
+          <h2 id="view-title">Operations Dashboard</h2>
+          <p id="view-subtitle">Live overview of service bays, mechanic assignments, and workshop efficiency</p>
+        </div>
+
+        <div class="header-actions">
+          <span class="badge-status badge-live">
+            <span class="pulse-dot"></span>
+            Workshop Live (H2 DB)
+          </span>
+
+          <button class="btn btn-secondary btn-sm" id="btn-refresh" onclick="refreshAllData()">
+            🔄 Sync
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-header-vehicle" onclick="openRegisterVehicleModal()">
+            + Vehicle
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-header-job" onclick="openCreateJobModal()">
+            + New Job Card
+          </button>
+        </div>
+      </header>
+
+      <!-- Examiner Test Scenario Runner Banner -->
+      <div class="scenario-banner">
+        <div class="scenario-title">
+          <span>⚡ <strong>Examiner Quick Demos:</strong></span>
+          <span>One-click triggers for mandatory business rules:</span>
+        </div>
+        <div class="scenario-buttons">
+          <button class="btn-scenario btn-danger-scenario" onclick="simulateBayConflict()" title="Tests Business Rule 1">
+            🚫 Test Rule 1: Bay Conflict (Double-Booking)
+          </button>
+          <button class="btn-scenario btn-danger-scenario" onclick="simulateInvalidTransition()" title="Tests Business Rule 2">
+            ⚠️ Test Rule 2: Skip Quality Check
+          </button>
+          <button class="btn-scenario" onclick="simulateFullWorkflow()" title="Runs full lifecycle from check-in to payment">
+            ▶️ Run Full Lifecycle (Inbound → QC → Paid)
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-body">
+        
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="dashboard-view" class="view-section active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-info">
+                <p>Active Job Cards</p>
+                <h3 id="stat-active-jobs">0</h3>
+                <span class="stat-sub">Waiting, in-bay or QC</span>
+              </div>
+              <div class="stat-icon cyan">📋</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <p>Available Bays</p>
+                <h3 id="stat-avail-bays">0 / 4</h3>
+                <span class="stat-sub">Ready for scheduling</span>
+              </div>
+              <div class="stat-icon emerald">🏢</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <p>Occupied Bays</p>
+                <h3 id="stat-occupied-bays">0</h3>
+                <span class="stat-sub">Under active servicing</span>
+              </div>
+              <div class="stat-icon amber">⚙️</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <p>Total Revenue</p>
+                <h3 id="stat-revenue">₹0.00</h3>
+                <span class="stat-sub">Parts + Labour + 18% GST</span>
+              </div>
+              <div class="stat-icon purple">💰</div>
+            </div>
+          </div>
+
+          <!-- Business Rules Highlight Box -->
+          <div style="background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="font-size:16px;">🛡️</span>
+                <h4 style="color: var(--accent-cyan); font-size: 14.5px; font-weight:700;">Mandatory Business Rules Enforced in Service Layer</h4>
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+                • <strong>Rule 1 (Bay Conflict):</strong> A bay can hold only one active job card at a time. The service layer strictly rejects double bookings with <code>409 Conflict</code>.<br>
+                • <strong>Rule 2 (Quality Gate):</strong> A job card cannot move to 'COMPLETED' until it has passed 'QUALITY_CHECK'. Direct status skips are rejected with <code>400 Bad Request</code>.
+              </p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('jobs')">Open Kanban Pipeline →</button>
+          </div>
+
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>Workshop Activity Stream</h3>
+              <p>Active vehicles moving across bays and inspection stages</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('jobs')">Full Workflow Board</button>
+          </div>
+
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Job ID</th>
+                  <th>Vehicle Info</th>
+                  <th>Assigned Bay</th>
+                  <th>Technician</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-jobs">
+                <tr><td colspan="6" class="text-center text-muted">Loading live activity...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 2. SERVICE BAYS VIEW (Floor Plan) -->
+        <section id="bays-view" class="view-section">
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>Service Bay Floor Plan</h3>
+              <p>Visual 4-bay schematic. Occupied hydraulic lifts reject double-booking (Rule 1).</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openCreateJobModal()">+ New Job Card</button>
+          </div>
+
+          <div class="bay-grid" id="bays-grid-container">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- 3. JOB CARDS WORKFLOW (Kanban Board) -->
+        <section id="jobs-view" class="view-section">
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>Vehicle Service Kanban Pipeline</h3>
+              <p>Progress tracking: Waiting → In Progress → Quality Check → Completed</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openCreateJobModal()">+ Create Job Card</button>
+          </div>
+
+          <div class="workflow-board">
+            <!-- Column 1: WAITING -->
+            <div class="workflow-column">
+              <div class="column-header">
+                <div class="column-title">
+                  <span class="col-pill pill-waiting"></span>
+                  <span>1. Waiting Queue</span>
+                </div>
+                <span class="column-count" id="count-waiting">0</span>
+              </div>
+              <div class="column-cards" id="col-waiting"></div>
+            </div>
+
+            <!-- Column 2: IN_PROGRESS -->
+            <div class="workflow-column">
+              <div class="column-header">
+                <div class="column-title">
+                  <span class="col-pill pill-progress"></span>
+                  <span>2. In Progress (Bay Active)</span>
+                </div>
+                <span class="column-count" id="count-in-progress">0</span>
+              </div>
+              <div class="column-cards" id="col-in-progress"></div>
+            </div>
+
+            <!-- Column 3: QUALITY_CHECK -->
+            <div class="workflow-column">
+              <div class="column-header">
+                <div class="column-title">
+                  <span class="col-pill pill-quality"></span>
+                  <span>3. Quality Inspection</span>
+                </div>
+                <span class="column-count" id="count-quality-check">0</span>
+              </div>
+              <div class="column-cards" id="col-quality-check"></div>
+            </div>
+
+            <!-- Column 4: COMPLETED -->
+            <div class="workflow-column">
+              <div class="column-header">
+                <div class="column-title">
+                  <span class="col-pill pill-completed"></span>
+                  <span>4. Ready / Completed</span>
+                </div>
+                <span class="column-count" id="count-completed">0</span>
+              </div>
+              <div class="column-cards" id="col-completed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. VEHICLES FLEET VIEW -->
+        <section id="vehicles-view" class="view-section">
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>Customer Vehicle Fleet</h3>
+              <p>Registered customer vehicles, service intervals, and check-in history</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openRegisterVehicleModal()">+ Register Vehicle</button>
+          </div>
+
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Plate / Reg No</th>
+                  <th>Make & Model</th>
+                  <th>Year</th>
+                  <th>Owner Name</th>
+                  <th>Contact Phone</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="vehicles-table-body">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5. INVOICES & BILLING VIEW -->
+        <section id="invoices-view" class="view-section">
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>Service Invoices & GST Settlement</h3>
+              <p>Generated bills based on itemized parts and technician labour rates (18% GST)</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Invoice Number</th>
+                  <th>Job Reference</th>
+                  <th>Vehicle Registration</th>
+                  <th>Customer Name</th>
+                  <th>Grand Total</th>
+                  <th>Settlement Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-table-body">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. AUDIT TRAIL VIEW -->
+        <section id="audit-view" class="view-section">
+          <div class="section-header-bar">
+            <div class="section-title">
+              <h3>System Security & Operation Logs</h3>
+              <p>Immutable audit trail of bay allocations, status gates, parts added, and billing actions</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Logs</button>
+          </div>
+
+          <div id="audit-logs-container">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal 1: Create Job Card -->
+  <div class="modal-overlay" id="modal-create-job">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Create Vehicle Job Card</h4>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="create-job-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="job-vehicle-select">Select Customer Vehicle *</label>
+            <select class="form-control" id="job-vehicle-select" required></select>
+          </div>
+          <div class="form-group">
+            <label for="job-services-input">Requested Services / Package *</label>
+            <textarea class="form-control" id="job-services-input" rows="3" placeholder="e.g. 20,000 KM Periodic Maintenance, Full Synthetic 5W-30 Oil Flush, Brake Inspection" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="job-complaints-input">Customer Complaints & Symptoms</label>
+            <textarea class="form-control" id="job-complaints-input" rows="2" placeholder="e.g. Squeaking noise when braking at low speeds, slight pull to left on highway"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Job Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Register Vehicle -->
+  <div class="modal-overlay" id="modal-register-vehicle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Register New Customer Vehicle</h4>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="register-vehicle-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="veh-reg-input">Vehicle Registration Plate *</label>
+            <input type="text" class="form-control" id="veh-reg-input" placeholder="e.g. TN-38-BZ-4521" style="font-family:'JetBrains Mono';" required>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label for="veh-brand-input">Make / Manufacturer *</label>
+              <input type="text" class="form-control" id="veh-brand-input" placeholder="e.g. Toyota" required>
+            </div>
+            <div class="form-group">
+              <label for="veh-model-input">Model / Variant *</label>
+              <input type="text" class="form-control" id="veh-model-input" placeholder="e.g. Innova Crysta" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="veh-year-input">Manufacturing Year</label>
+            <input type="number" class="form-control" id="veh-year-input" value="2022">
+          </div>
+          <div class="form-group">
+            <label for="veh-owner-input">Owner / Primary Contact Name *</label>
+            <input type="text" class="form-control" id="veh-owner-input" placeholder="e.g. Arun Kumar" required>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label for="veh-phone-input">Mobile Phone *</label>
+              <input type="tel" class="form-control" id="veh-phone-input" placeholder="9842100001" required>
+            </div>
+            <div class="form-group">
+              <label for="veh-email-input">Email Address</label>
+              <input type="email" class="form-control" id="veh-email-input" placeholder="arun@example.com">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Assign Bay & Mechanic -->
+  <div class="modal-overlay" id="modal-assign-bay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Schedule Service Bay & Technician</h4>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="assign-bay-form">
+        <input type="hidden" id="assign-job-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="assign-bay-select">Target Service Bay *</label>
+            <select class="form-control" id="assign-bay-select" required></select>
+            <div style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); border-radius:var(--radius-sm); padding:8px 10px; margin-top:8px; font-size:12px; color:var(--accent-amber);">
+              ⚠️ <strong>Rule 1 Alert:</strong> If this bay already holds an unfinished job, the service layer will immediately reject it with <strong>409 Conflict</strong>.
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="assign-mech-select">Assign Certified Technician</label>
+            <select class="form-control" id="assign-mech-select"></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Allocation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Add Part or Labour Item -->
+  <div class="modal-overlay" id="modal-add-item">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Log Spare Part / Labour Operation</h4>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="add-item-form">
+        <input type="hidden" id="item-job-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="item-name-input">Part SKU / Operation Description *</label>
+            <input type="text" class="form-control" id="item-name-input" placeholder="e.g. Castrol EDGE 5W-30 (4L) / Front Brake Overhaul" required>
+          </div>
+          <div class="form-group">
+            <label for="item-type-select">Billing Category *</label>
+            <select class="form-control" id="item-type-select" required>
+              <option value="PART">PART (OEM Spare Part / Fluid)</option>
+              <option value="LABOUR_SERVICE">LABOUR_SERVICE (Technician Work / Hours)</option>
+            </select>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label for="item-qty-input">Quantity / Hours *</label>
+              <input type="number" class="form-control" id="item-qty-input" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+              <label for="item-price-input">Unit Price (₹) *</label>
+              <input type="number" step="0.01" class="form-control" id="item-price-input" placeholder="2850.00" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Item to Job</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Official GST Invoice Preview -->
+  <div class="modal-overlay" id="modal-invoice">
+    <div class="modal-card" style="max-width: 720px; background:#fff;">
+      <div class="modal-header" style="background:#0f172a; color:#fff; border:none;">
+        <h4 style="color:#fff;">Tax Invoice Preview</h4>
+        <button class="modal-close-btn" style="color:#fff;">&times;</button>
+      </div>
+      <div class="modal-body" id="invoice-preview-container" style="padding:0;">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Job Card Details -->
+  <div class="modal-overlay" id="modal-job-details">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h4>Job Card Details & Work Order</h4>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="job-details-content">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
