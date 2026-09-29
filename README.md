@@ -345,11 +345,3 @@ The collection organizes requests by module:
 
 ---
 
-## 🏆 Assessment Rubric Coverage (100/100)
-
-| Rubric Criteria | Weightage | GarageDesk Implementation Highlights |
-| :--- | :---: | :--- |
-| **1. Technical Implementation** | **40 Marks** | Complete Spring Boot 3 & JPA implementation, full CRUD, DTO mappings, Bay conflict validation, quality-check verification, billing calculation. |
-| **2. System Design & Architecture**| **25 Marks** | Layered Architecture (Controller $\to$ Service $\to$ Repository $\to$ Entity), ER diagrams, UML workflow, separation of concerns. |
-| **3. Code Quality & Efficiency** | **20 Marks** | Centralized `@RestControllerAdvice`, Custom domain exceptions (`BayConflictException`, `InvalidStatusTransitionException`), Bean validation (`@Valid`, `@NotNull`), clean code. |
-| **4. Presentation & Demo (Q&A)** | **15 Marks** | Swagger UI (`/swagger-ui.html`), Pre-seeded `DataInitializer`, complete documentation and automated test suite. |
