@@ -1285,41 +1285,45 @@ function switchAuthTab(tab) {
   }
 }
 
-function handleSignInSubmit(e) {
+async function handleSignInSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('signin-email').value.trim();
-  
-  let role = 'Workshop Manager';
-  let name = 'Mahilesh';
+  const emailInput = document.getElementById('signin-email');
+  const pwdInput = document.getElementById('signin-password');
+  const usernameOrEmail = emailInput ? emailInput.value.trim() : '';
+  const password = pwdInput ? pwdInput.value.trim() : '';
 
-  if (email.includes('advisor')) {
-    role = 'Service Advisor';
-    name = 'Arun Service Advisor';
-  } else if (email.includes('mechanic')) {
-    role = 'Master Mechanic';
-    name = 'Rajesh Kumar (Lead Tech)';
-  } else if (email.includes('qc') || email.includes('inspector')) {
-    role = 'Quality Inspector';
-    name = 'Priya Supervisor';
-  } else if (email.includes('@')) {
-    const prefix = email.split('@')[0];
-    name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  try {
+    showToast('🔐 Authenticating with GarageDesk backend...', 'info');
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernameOrEmail, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Invalid username or password');
+    }
+
+    const authData = data.data;
+    const user = {
+      name: authData.user.fullName,
+      email: authData.user.email,
+      role: formatRoleName(authData.user.role),
+      badge: authData.user.staffBadgeNumber || 'SECE-060',
+      token: authData.token,
+      provider: authData.user.authProvider
+    };
+
+    setStoredUser(user);
+    closeModal('modal-auth');
+    showToast(`🚀 Welcome back, ${user.name}! Signed in as ${user.role}.`, 'success');
+  } catch (err) {
+    showToast(`❌ ${err.message}. If you are a new user, please click the "Create Account" tab to register.`, 'error');
   }
-
-  const user = {
-    name: name,
-    email: email,
-    role: role,
-    badge: 'EMP-' + Math.floor(100 + Math.random() * 900),
-    provider: 'email'
-  };
-
-  setStoredUser(user);
-  closeModal('modal-auth');
-  showToast(`👋 Welcome back, ${name}! Signed in as ${role}.`, 'success');
 }
 
-function handleRegisterSubmit(e) {
+async function handleRegisterSubmit(e) {
   e.preventDefault();
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -1329,39 +1333,53 @@ function handleRegisterSubmit(e) {
   const pwdConfirm = document.getElementById('reg-confirm-password').value;
 
   if (pwd !== pwdConfirm) {
-    showToast('⚠️ Passwords do not match! Please check.', 'error');
+    showToast('⚠️ Passwords do not match! Please verify your password.', 'error');
     return;
   }
 
-  const user = {
-    name: name,
-    email: email,
-    role: role,
-    badge: badge,
-    provider: 'registered'
-  };
+  const username = email.includes('@') ? email.split('@')[0] : email;
 
-  setStoredUser(user);
-  closeModal('modal-auth');
-  showToast(`🎉 Registration successful! Welcome to Workshop OS, ${name} (${role})!`, 'success');
+  try {
+    showToast('Creating new account in database...', 'info');
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username,
+        email: email,
+        password: pwd,
+        fullName: name,
+        role: mapRoleToEnum(role),
+        staffBadgeNumber: badge || ('SECE-' + Math.floor(100 + Math.random() * 900))
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Registration failed');
+    }
+
+    const authData = data.data;
+    const user = {
+      name: authData.user.fullName,
+      email: authData.user.email,
+      role: formatRoleName(authData.user.role),
+      badge: authData.user.staffBadgeNumber,
+      token: authData.token,
+      provider: authData.user.authProvider
+    };
+
+    setStoredUser(user);
+    closeModal('modal-auth');
+    showToast(`🎉 Welcome to GarageDesk, ${user.name}! Your account has been registered.`, 'success');
+  } catch (err) {
+    showToast(`❌ Registration error: ${err.message}`, 'error');
+  }
 }
 
 function openGoogleAuthModal() {
   closeModal('modal-auth');
   openModal('modal-google-auth');
-}
-
-function confirmGoogleSignIn(name, email, role) {
-  closeModal('modal-google-auth');
-  const user = {
-    name: name,
-    email: email,
-    role: role || 'Workshop Manager',
-    badge: 'GOOGLE-OAUTH',
-    provider: 'google'
-  };
-  setStoredUser(user);
-  showToast(`🚀 Authenticated via Google as ${name} (${email})!`, 'success');
 }
 
 function openCustomGooglePrompt() {
@@ -1378,20 +1396,20 @@ function quickFillCredentials(roleKey) {
   const pwdInput = document.getElementById('signin-password');
 
   if (roleKey === 'manager') {
-    emailInput.value = 'mahilesh@garagedesk.com';
+    emailInput.value = 'admin@garagedesk.com';
     pwdInput.value = 'garage2026';
     showToast('Filled Workshop Manager credentials', 'info');
   } else if (roleKey === 'advisor') {
-    emailInput.value = 'advisor.arun@garagedesk.com';
+    emailInput.value = 'advisor@garagedesk.com';
     pwdInput.value = 'advisor123';
     showToast('Filled Service Advisor credentials', 'info');
   } else if (roleKey === 'mechanic') {
-    emailInput.value = 'mechanic.rajesh@garagedesk.com';
-    pwdInput.value = 'mechanic123';
+    emailInput.value = 'mechanic@garagedesk.com';
+    pwdInput.value = 'mech123';
     showToast('Filled Master Mechanic credentials', 'info');
   } else if (roleKey === 'inspector') {
-    emailInput.value = 'qc.priya@garagedesk.com';
-    pwdInput.value = 'qcsecure2026';
+    emailInput.value = 'inspector@garagedesk.com';
+    pwdInput.value = 'qc123';
     showToast('Filled Quality Inspector credentials', 'info');
   }
 
@@ -1436,12 +1454,36 @@ function showForgotPasswordToast(e) {
 function toggleSplitAuthCard(cardType) {
   const loginCard = document.getElementById('split-login-card');
   const regCard = document.getElementById('split-register-card');
+  const tabLogin = document.getElementById('tab-split-login');
+  const tabReg = document.getElementById('tab-split-register');
+  const usernameInput = document.getElementById('escrow-username');
+  const regEmailInput = document.getElementById('escrow-reg-email');
+  const regNameInput = document.getElementById('escrow-reg-name');
+
   if (cardType === 'register') {
     if (loginCard) loginCard.style.display = 'none';
     if (regCard) regCard.style.display = 'block';
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabReg) tabReg.classList.add('active');
+
+    // Auto-carry typed email/name over to the register form
+    if (usernameInput && regEmailInput && usernameInput.value) {
+      const val = usernameInput.value.trim();
+      if (val.includes('@')) {
+        regEmailInput.value = val;
+        if (regNameInput && !regNameInput.value) {
+          const prefix = val.split('@')[0];
+          regNameInput.value = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+        }
+      } else if (!regEmailInput.value) {
+        regEmailInput.value = val + '@garagedesk.com';
+      }
+    }
   } else {
     if (loginCard) loginCard.style.display = 'block';
     if (regCard) regCard.style.display = 'none';
+    if (tabLogin) tabLogin.classList.add('active');
+    if (tabReg) tabReg.classList.remove('active');
   }
 }
 
@@ -1472,8 +1514,13 @@ async function handleSplitLogin(e) {
   const usernameOrEmail = document.getElementById('escrow-username').value.trim();
   const password = document.getElementById('escrow-password').value.trim();
 
+  if (!usernameOrEmail || !password) {
+    showToast('⚠️ Please enter both your username/email and password.', 'error');
+    return;
+  }
+
   try {
-    showToast('Authenticating with backend...', 'info');
+    showToast('🔐 Authenticating with GarageDesk backend...', 'info');
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1496,9 +1543,14 @@ async function handleSplitLogin(e) {
     };
 
     setStoredUser(user);
-    showToast(`🚀 Authenticated! Welcome, ${user.name} (${user.role}).`, 'success');
+    showToast(`🚀 Welcome back, ${user.name}! Signed in as ${user.role}.`, 'success');
   } catch (err) {
-    showToast(`❌ Authentication failed: ${err.message}`, 'error');
+    // If account not found or wrong password, inform the user clearly
+    const regEmail = document.getElementById('escrow-reg-email');
+    if (regEmail && usernameOrEmail.includes('@')) {
+      regEmail.value = usernameOrEmail;
+    }
+    showToast(`❌ Account not found or wrong password. If you are a new user, click "New User · Sign Up" above to register.`, 'error');
   }
 }
 
@@ -1509,10 +1561,15 @@ async function handleSplitRegister(e) {
   const roleInput = document.getElementById('escrow-reg-role').value;
   const password = document.getElementById('escrow-reg-pwd').value.trim();
 
+  if (!fullName || !email || !password) {
+    showToast('⚠️ Please fill in all required registration fields.', 'error');
+    return;
+  }
+
   const username = email.includes('@') ? email.split('@')[0] : email;
 
   try {
-    showToast('Registering user in database...', 'info');
+    showToast('Creating new account in database...', 'info');
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1542,9 +1599,9 @@ async function handleSplitRegister(e) {
     };
 
     setStoredUser(user);
-    showToast(`🎉 Account created in DB! Welcome, ${user.name}!`, 'success');
+    showToast(`🎉 Welcome to GarageDesk, ${user.name}! Your account has been created.`, 'success');
   } catch (err) {
-    showToast(`❌ Registration error: ${err.message}`, 'error');
+    showToast(`❌ Registration error: ${err.message}. If you already have an account, click "Existing User · Sign In".`, 'error');
   }
 }
 
@@ -1560,7 +1617,7 @@ async function confirmGoogleSignIn(name, email, role) {
         name: name,
         googleId: 'goog_' + Date.now(),
         avatarUrl: '',
-        role: mapRoleToEnum(role)
+        role: mapRoleToEnum(role || 'Workshop Manager')
       })
     });
 
@@ -1580,9 +1637,9 @@ async function confirmGoogleSignIn(name, email, role) {
     };
 
     setStoredUser(user);
-    showToast(`🚀 Authenticated via Google OAuth as ${user.name}!`, 'success');
+    showToast(`🚀 Authenticated via Google as ${user.name} (${user.role})!`, 'success');
   } catch (err) {
-    showToast(`❌ Google Auth error: ${err.message}`, 'error');
+    showToast(`❌ Google Sign-In failed: ${err.message}`, 'error');
   }
 }
 

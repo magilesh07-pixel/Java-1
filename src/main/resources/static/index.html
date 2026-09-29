@@ -63,9 +63,21 @@
         
         <!-- CARD 1: SIGN IN CARD (Exact replica of screenshot) -->
         <div class="split-login-card" id="split-login-card">
+          <!-- Auth Mode Tabs (Sign In vs Create Account) -->
+          <div class="split-auth-tabs">
+            <button type="button" class="split-auth-tab active" id="tab-split-login" onclick="toggleSplitAuthCard('login')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+              <span>Existing User · Sign In</span>
+            </button>
+            <button type="button" class="split-auth-tab" id="tab-split-register" onclick="toggleSplitAuthCard('register')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              <span>New User · Sign Up</span>
+            </button>
+          </div>
+
           <div class="split-card-header">
-            <h2>Welcome Back</h2>
-            <p>Sign in to your protected GarageDesk workspace</p>
+            <h2 id="split-login-card-title">Welcome Back</h2>
+            <p id="split-login-card-desc">Sign in to your protected GarageDesk workspace</p>
           </div>
 
           <!-- Google OAuth Button -->
@@ -123,9 +135,21 @@
 
         <!-- CARD 2: REGISTER CARD -->
         <div class="split-login-card" id="split-register-card" style="display:none;">
+          <!-- Auth Mode Tabs (Sign In vs Create Account) -->
+          <div class="split-auth-tabs">
+            <button type="button" class="split-auth-tab" onclick="toggleSplitAuthCard('login')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+              <span>Existing User · Sign In</span>
+            </button>
+            <button type="button" class="split-auth-tab active" onclick="toggleSplitAuthCard('register')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              <span>New User · Sign Up</span>
+            </button>
+          </div>
+
           <div class="split-card-header">
-            <h2>Create Account</h2>
-            <p>Join the protected GarageDesk workshop ecosystem</p>
+            <h2>Create New Account</h2>
+            <p>Register as a new staff member or client in GarageDesk</p>
           </div>
 
           <form id="escrow-register-form" onsubmit="handleSplitRegister(event)">
