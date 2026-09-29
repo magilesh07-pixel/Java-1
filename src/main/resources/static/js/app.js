@@ -1138,7 +1138,7 @@ function formatDate(dateStr) {
 
 const DEFAULT_AUTH_USER = {
   name: 'Mahilesh',
-  email: 'magilesh07@gmail.com',
+  email: 'admin@garagedesk.com',
   role: 'Workshop Manager',
   badge: 'SECE-060',
   provider: 'google'
@@ -1150,10 +1150,10 @@ function getStoredUser() {
     try {
       return JSON.parse(stored);
     } catch (e) {
-      return DEFAULT_AUTH_USER;
+      return null;
     }
   }
-  return DEFAULT_AUTH_USER;
+  return null;
 }
 
 function setStoredUser(user) {
@@ -1167,27 +1167,33 @@ function setStoredUser(user) {
 
 function initAuthUI() {
   const user = getStoredUser();
+  const splitContainer = document.getElementById('split-auth-container');
+  const appContainer = document.getElementById('app-container');
   const slot = document.getElementById('user-auth-slot');
-  if (!slot) return;
 
   if (user) {
-    const initial = user.name ? user.name.charAt(0).toUpperCase() : 'M';
-    slot.innerHTML = `
-      <div class="user-profile-pill" onclick="toggleProfileDropdown(event)" title="Click to view profile, switch roles, or manage account">
-        <div class="user-avatar-wrap">
-          <div class="user-avatar-small">${initial}</div>
-          <span class="user-status-dot"></span>
+    if (splitContainer) splitContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'flex';
+
+    if (slot) {
+      const initial = user.name ? user.name.charAt(0).toUpperCase() : 'M';
+      slot.innerHTML = `
+        <div class="user-profile-pill" onclick="toggleProfileDropdown(event)" title="Click to view profile, switch roles, or manage account">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar-small">${initial}</div>
+            <span class="user-status-dot"></span>
+          </div>
+          <div class="user-meta-text">
+            <span class="user-meta-name">
+              ${user.name}
+              ${user.provider === 'google' ? '<span title="Google Verified" style="font-size:11px;">✨</span>' : ''}
+            </span>
+            <span class="user-meta-role">${user.role}</span>
+          </div>
+          <span class="user-chevron">▾</span>
         </div>
-        <div class="user-meta-text">
-          <span class="user-meta-name">
-            ${user.name}
-            ${user.provider === 'google' ? '<span title="Google Verified" style="font-size:11px;">✨</span>' : ''}
-          </span>
-          <span class="user-meta-role">${user.role}</span>
-        </div>
-        <span class="user-chevron">▾</span>
-      </div>
-    `;
+      `;
+    }
 
     // Update Dropdown details
     const dropAvatar = document.getElementById('dropdown-user-avatar');
@@ -1195,7 +1201,7 @@ function initAuthUI() {
     const dropEmail = document.getElementById('dropdown-user-email');
     const dropRole = document.getElementById('dropdown-user-role');
 
-    if (dropAvatar) dropAvatar.textContent = initial;
+    if (dropAvatar) dropAvatar.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'M';
     if (dropName) dropName.textContent = user.name;
     if (dropEmail) dropEmail.textContent = user.email || 'user@garagedesk.com';
     if (dropRole) {
@@ -1213,11 +1219,17 @@ function initAuthUI() {
     else if (user.role.includes('Inspector') || user.role.includes('QC')) document.getElementById('role-btn-inspector')?.classList.add('active');
 
   } else {
-    slot.innerHTML = `
-      <button class="btn btn-primary btn-sm" onclick="openAuthModal('signin')">
-        <span>🔐 Sign In / Register</span>
-      </button>
-    `;
+    // Show Split Login Screen
+    if (splitContainer) splitContainer.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
+
+    if (slot) {
+      slot.innerHTML = `
+        <button class="btn btn-primary btn-sm" onclick="showSplitLogin()">
+          <span>🔐 Sign In / Register</span>
+        </button>
+      `;
+    }
   }
 }
 
@@ -1419,4 +1431,104 @@ function showForgotPasswordToast(e) {
   e.preventDefault();
   showToast('📧 Password reset instructions dispatched to your registered address.', 'info');
 }
+
+// Split-Screen Reference Login Handlers
+function toggleSplitAuthCard(cardType) {
+  const loginCard = document.getElementById('split-login-card');
+  const regCard = document.getElementById('split-register-card');
+  if (cardType === 'register') {
+    if (loginCard) loginCard.style.display = 'none';
+    if (regCard) regCard.style.display = 'block';
+  } else {
+    if (loginCard) loginCard.style.display = 'block';
+    if (regCard) regCard.style.display = 'none';
+  }
+}
+
+function quickSplitFill(roleKey) {
+  let user = {
+    name: 'Mahilesh',
+    email: 'admin@garagedesk.com',
+    role: 'Workshop Manager',
+    badge: 'SECE-060',
+    provider: 'email'
+  };
+
+  if (roleKey === 'admin') {
+    user.name = 'Mahilesh';
+    user.email = 'admin@garagedesk.com';
+    user.role = 'Workshop Manager';
+  } else if (roleKey === 'advisor') {
+    user.name = 'Arun Kumar';
+    user.email = 'advisor@garagedesk.com';
+    user.role = 'Service Advisor';
+  } else if (roleKey === 'mechanic') {
+    user.name = 'Rajesh Kumar';
+    user.email = 'mechanic@garagedesk.com';
+    user.role = 'Master Mechanic';
+  } else if (roleKey === 'client') {
+    user.name = 'Priya Sharma';
+    user.email = 'priya.sharma@gmail.com';
+    user.role = 'Client User';
+  }
+
+  setStoredUser(user);
+  showToast(`👋 Signed in as ${user.name} (${user.role})!`, 'success');
+}
+
+function handleSplitLogin(e) {
+  e.preventDefault();
+  const input = document.getElementById('escrow-username').value.trim();
+  let role = 'Workshop Manager';
+  let name = 'Mahilesh';
+
+  if (input.toLowerCase().includes('client')) {
+    role = 'Client User';
+    name = 'Priya Sharma';
+  } else if (input.toLowerCase().includes('advisor')) {
+    role = 'Service Advisor';
+    name = 'Arun Kumar';
+  } else if (input.toLowerCase().includes('mech')) {
+    role = 'Master Mechanic';
+    name = 'Rajesh Kumar';
+  } else if (input.includes('@')) {
+    const raw = input.split('@')[0];
+    name = raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  const user = {
+    name: name,
+    email: input.includes('@') ? input : input + '@garagedesk.com',
+    role: role,
+    badge: 'EMP-' + Math.floor(100 + Math.random() * 900),
+    provider: 'email'
+  };
+
+  setStoredUser(user);
+  showToast(`🚀 Welcome back, ${name}! Signed in to GarageDesk.`, 'success');
+}
+
+function handleSplitRegister(e) {
+  e.preventDefault();
+  const name = document.getElementById('escrow-reg-name').value.trim();
+  const email = document.getElementById('escrow-reg-email').value.trim();
+  const role = document.getElementById('escrow-reg-role').value;
+
+  const user = {
+    name: name,
+    email: email,
+    role: role,
+    badge: 'SECE-060',
+    provider: 'registered'
+  };
+
+  setStoredUser(user);
+  showToast(`🎉 Registration complete! Welcome to GarageDesk, ${name}!`, 'success');
+}
+
+function showSplitLogin() {
+  closeProfileDropdown();
+  setStoredUser(null);
+}
+
 
