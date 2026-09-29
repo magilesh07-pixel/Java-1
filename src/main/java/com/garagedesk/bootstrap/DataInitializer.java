@@ -93,7 +93,15 @@ public class DataInitializer implements CommandLineRunner {
         // 5. Seed Waiting JobCard for veh2
         JobCard job2 = new JobCard(veh2, "Periodic 20,000 km Service & AC inspection", "AC cooling is slightly low");
         job2.setStatus(JobStatus.WAITING);
-        jobCardRepository.save(job2);
+        JobCard savedJob2 = jobCardRepository.save(job2);
+
+        ServiceItem item4 = new ServiceItem(savedJob2, "R134a AC Refrigerant Gas Recharge", ItemType.PART, 1, BigDecimal.valueOf(1450.00));
+        ServiceItem item5 = new ServiceItem(savedJob2, "Honda OEM Carbon Cabin Air Filter", ItemType.PART, 1, BigDecimal.valueOf(650.00));
+        ServiceItem item6 = new ServiceItem(savedJob2, "AC Evaporator Flush & Diagnostic Labour", ItemType.LABOUR_SERVICE, 1, BigDecimal.valueOf(800.00));
+        serviceItemRepository.save(item4);
+        serviceItemRepository.save(item5);
+        serviceItemRepository.save(item6);
+        log.info("Seeded JobCard #{} for veh2 with parts and labour.", savedJob2.getId());
 
         log.info("--- GarageDesk Data Seeding Completed Successfully ---");
     }

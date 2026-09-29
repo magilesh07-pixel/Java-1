@@ -185,11 +185,14 @@ INSERT INTO job_cards (id, vehicle_id, bay_id, mechanic_id, status, requested_se
 INSERT INTO job_cards (id, vehicle_id, bay_id, mechanic_id, status, requested_services, customer_complaints, created_at) VALUES
 (2, 2, NULL, NULL, 'WAITING', 'Periodic 20,000 km Service & AC inspection', 'AC cooling is slightly low', NOW());
 
--- Seed Logged Parts & Labour on Job #1
+-- Seed Logged Parts & Labour on Job #1 and Job #2
 INSERT INTO service_items (id, job_card_id, item_name, item_type, quantity, unit_price, total_price) VALUES
 (1, 1, 'Castrol Edge 5W-30 Fully Synthetic Oil (4L)', 'PART', 1, 2850.00, 2850.00),
 (2, 1, 'Genuine OEM Oil Filter', 'PART', 1, 450.00, 450.00),
-(3, 1, 'General Service Labour & Inspection', 'LABOUR_SERVICE', 2, 650.00, 1300.00);
+(3, 1, 'General Service Labour & Inspection', 'LABOUR_SERVICE', 2, 650.00, 1300.00),
+(4, 2, 'R134a AC Refrigerant Gas Recharge', 'PART', 1, 1450.00, 1450.00),
+(5, 2, 'Honda OEM Carbon Cabin Air Filter', 'PART', 1, 650.00, 650.00),
+(6, 2, 'AC Evaporator Flush & Diagnostic Labour', 'LABOUR_SERVICE', 1, 800.00, 800.00);
 
 -- Seed Sample Audit Trail
 INSERT INTO audit_logs (entity_name, entity_id, action, performed_by, details, timestamp) VALUES

@@ -921,7 +921,7 @@ function renderInvoiceModalContent(bill) {
           </tr>
         </thead>
         <tbody>
-          ${job?.serviceItems?.map((item, idx) => `
+          ${(job?.serviceItems && job.serviceItems.length > 0) ? job.serviceItems.map((item, idx) => `
             <tr>
               <td>${idx + 1}</td>
               <td><strong>${item.itemName}</strong></td>
@@ -930,14 +930,12 @@ function renderInvoiceModalContent(bill) {
               <td>₹${(item.unitPrice || 0).toFixed(2)}</td>
               <td style="text-align:right;"><strong>₹${(item.totalPrice || 0).toFixed(2)}</strong></td>
             </tr>
-          `).join('') || `
+          `).join('') : `
             <tr>
-              <td>1</td>
-              <td><strong>Comprehensive Periodic Service & Fluids</strong></td>
-              <td><span style="font-family:'JetBrains Mono'; font-size:11px;">998714</span></td>
-              <td>1</td>
-              <td>₹${subTotal.toFixed(2)}</td>
-              <td style="text-align:right;"><strong>₹${subTotal.toFixed(2)}</strong></td>
+              <td colspan="6" style="text-align:center; padding:22px 14px; color:#64748b; background:#f8fafc;">
+                <div style="font-weight:600; color:#334155; margin-bottom:4px;">ℹ️ No Spare Parts or Labour Charges Logged Yet</div>
+                <div style="font-size:12px;">This job card was created with zero parts or labour logged, so the invoice total is ₹0.00.<br>Add parts and labour charges on the Job Card to generate a billed invoice.</div>
+              </td>
             </tr>
           `}
         </tbody>
