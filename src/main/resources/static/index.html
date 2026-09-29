@@ -97,8 +97,44 @@
           <button class="btn btn-primary btn-sm" id="btn-header-job" onclick="openCreateJobModal()">
             + New Job Card
           </button>
+
+          <!-- User Authentication Profile Slot -->
+          <div class="user-auth-slot" id="user-auth-slot"></div>
         </div>
       </header>
+
+      <!-- User Profile Dropdown Menu -->
+      <div class="user-profile-dropdown" id="user-profile-dropdown">
+        <div class="profile-dropdown-header">
+          <div class="profile-avatar-large" id="dropdown-user-avatar">M</div>
+          <div class="profile-dropdown-info">
+            <h4 id="dropdown-user-name">Mahilesh</h4>
+            <p id="dropdown-user-email">magilesh07@gmail.com</p>
+            <span class="role-badge role-manager" id="dropdown-user-role">Workshop Manager</span>
+          </div>
+        </div>
+        <div class="profile-dropdown-divider"></div>
+        <div class="profile-dropdown-section">
+          <span class="dropdown-label">QUICK SWITCH ACTIVE ROLE:</span>
+          <div class="role-switcher-grid">
+            <button type="button" class="role-switch-btn active" id="role-btn-manager" onclick="switchActiveRole('Workshop Manager')">👔 Manager</button>
+            <button type="button" class="role-switch-btn" id="role-btn-advisor" onclick="switchActiveRole('Service Advisor')">📋 Advisor</button>
+            <button type="button" class="role-switch-btn" id="role-btn-mechanic" onclick="switchActiveRole('Master Mechanic')">🔧 Mechanic</button>
+            <button type="button" class="role-switch-btn" id="role-btn-inspector" onclick="switchActiveRole('Quality Inspector')">🔍 QC Lead</button>
+          </div>
+        </div>
+        <div class="profile-dropdown-divider"></div>
+        <div class="profile-dropdown-actions">
+          <button type="button" class="dropdown-action-btn" onclick="openAuthModal('signin'); closeProfileDropdown();">
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            Switch / Manage Account
+          </button>
+          <button type="button" class="dropdown-action-btn btn-signout" onclick="handleLogout()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
 
       <!-- Examiner Test Scenario Runner Banner -->
       <div class="scenario-banner">
@@ -531,6 +567,224 @@
       </div>
       <div class="modal-body" id="job-details-content">
         <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Authentication Modal (Sign In / Register / Google OAuth) -->
+  <div class="modal-overlay" id="modal-auth">
+    <div class="modal-card auth-modal-card">
+      <div class="modal-header auth-modal-header">
+        <div class="auth-header-brand">
+          <div class="auth-brand-logo">🏎️</div>
+          <div>
+            <h3>GarageDesk Workshop OS</h3>
+            <p>Enterprise Service & Bay Scheduling Portal</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('modal-auth')">&times;</button>
+      </div>
+
+      <div class="auth-modal-body">
+        <!-- Segmented Tab Switcher -->
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tab-btn-signin" onclick="switchAuthTab('signin')">
+            Sign In
+          </button>
+          <button class="auth-tab-btn" id="tab-btn-register" onclick="switchAuthTab('register')">
+            Create Account
+          </button>
+        </div>
+
+        <!-- Google OAuth Button -->
+        <button type="button" class="btn-google-auth" onclick="openGoogleAuthModal()">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div class="auth-divider">
+          <span>or continue with email credentials</span>
+        </div>
+
+        <!-- 1. SIGN IN FORM -->
+        <form id="form-signin" onsubmit="handleSignInSubmit(event)">
+          <div class="form-group">
+            <label for="signin-email">Work Email or Staff ID *</label>
+            <div class="input-with-icon">
+              <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+              <input type="email" class="form-control" id="signin-email" placeholder="e.g. mahilesh@garagedesk.com" required value="mahilesh@garagedesk.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label for="signin-password" style="margin-bottom:0;">Password *</label>
+              <a href="#" onclick="showForgotPasswordToast(event)" class="auth-link-small">Forgot password?</a>
+            </div>
+            <div class="input-with-icon">
+              <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <input type="password" class="form-control" id="signin-password" placeholder="••••••••" required value="garage2026">
+              <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('signin-password', this)">👁️</button>
+            </div>
+          </div>
+
+          <div class="quick-demo-roles">
+            <span class="quick-roles-title">⚡ Instant Demo Sign-In (Click any role):</span>
+            <div class="quick-roles-chips">
+              <button type="button" class="role-chip" onclick="quickFillCredentials('manager')">👔 Manager</button>
+              <button type="button" class="role-chip" onclick="quickFillCredentials('advisor')">📋 Advisor</button>
+              <button type="button" class="role-chip" onclick="quickFillCredentials('mechanic')">🔧 Mechanic</button>
+              <button type="button" class="role-chip" onclick="quickFillCredentials('inspector')">🔍 QC Inspector</button>
+            </div>
+          </div>
+
+          <div class="auth-remember-row">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" id="signin-remember" checked>
+              <span>Keep me logged in on this browser</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-auth-submit">
+            <span>Sign In to GarageDesk</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </form>
+
+        <!-- 2. REGISTER FORM -->
+        <form id="form-register" style="display:none;" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-group">
+            <label for="reg-name">Full Name *</label>
+            <div class="input-with-icon">
+              <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <input type="text" class="form-control" id="reg-name" placeholder="e.g. Mahilesh R." required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label for="reg-email">Work Email *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <input type="email" class="form-control" id="reg-email" placeholder="staff@garagedesk.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reg-badge">Staff / Reg No *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                <input type="text" class="form-control" id="reg-badge" placeholder="e.g. SECE-060" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-role">Designated Role *</label>
+            <select class="form-control" id="reg-role" required>
+              <option value="Workshop Manager">👔 Workshop Manager (Full Administrative Access)</option>
+              <option value="Service Advisor">📋 Service Advisor (Check-in & Bay Allocation)</option>
+              <option value="Master Mechanic">🔧 Chief Mechanic (Shop Floor & Parts Log)</option>
+              <option value="Quality Inspector">🔍 Quality Inspector (Mandatory QC Gate)</option>
+              <option value="Fleet Customer">🚗 Customer / Vehicle Owner (Track Repairs)</option>
+            </select>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label for="reg-password">Password *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <input type="password" class="form-control" id="reg-password" placeholder="At least 6 chars" required minlength="6">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reg-confirm-password">Confirm Password *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <input type="password" class="form-control" id="reg-confirm-password" placeholder="Repeat password" required minlength="6">
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-terms">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" required checked>
+              <span>I agree to the Workshop Operating Standards & Safety Policy</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-auth-submit">
+            <span>Register Staff Account</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Google One-Tap / OAuth Account Selector -->
+  <div class="modal-overlay" id="modal-google-auth">
+    <div class="modal-card google-modal-card">
+      <div class="google-modal-header">
+        <div class="google-logo-row">
+          <svg class="google-icon-large" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <h4>Sign in with Google</h4>
+        </div>
+        <p class="google-modal-sub">Choose an account to continue to <strong>GarageDesk Workshop OS</strong></p>
+        <button class="modal-close-btn" onclick="closeModal('modal-google-auth')">&times;</button>
+      </div>
+
+      <div class="google-account-list">
+        <!-- Account 1: Mahilesh -->
+        <div class="google-account-item" onclick="confirmGoogleSignIn('Mahilesh', 'magilesh07@gmail.com', 'Workshop Manager')">
+          <div class="google-avatar-wrap">
+            <div class="google-avatar-letter">M</div>
+          </div>
+          <div class="google-account-details">
+            <span class="google-account-name">Mahilesh (You)</span>
+            <span class="google-account-email">magilesh07@gmail.com</span>
+            <span class="google-account-tag">Workshop Manager · Reg: 060</span>
+          </div>
+          <div class="google-arrow">➜</div>
+        </div>
+
+        <!-- Account 2: SECE College Supervisor -->
+        <div class="google-account-item" onclick="confirmGoogleSignIn('SECE Supervisor', 'supervisor.leap@sece.ac.in', 'Quality Inspector')">
+          <div class="google-avatar-wrap">
+            <div class="google-avatar-letter" style="background:#10b981;">S</div>
+          </div>
+          <div class="google-account-details">
+            <span class="google-account-name">SECE Supervisor</span>
+            <span class="google-account-email">supervisor.leap@sece.ac.in</span>
+            <span class="google-account-tag">Quality Inspector Lead</span>
+          </div>
+          <div class="google-arrow">➜</div>
+        </div>
+
+        <!-- Account 3: Custom Login -->
+        <div class="google-account-item" onclick="openCustomGooglePrompt()">
+          <div class="google-avatar-wrap">
+            <div class="google-avatar-letter" style="background:rgba(255,255,255,0.08); color:var(--text-secondary);">+</div>
+          </div>
+          <div class="google-account-details">
+            <span class="google-account-name">Use another Google account</span>
+            <span class="google-account-email">Sign in with work or personal email</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="google-modal-footer">
+        <p>To continue, Google will share your name, email address, language preference, and profile picture with GarageDesk.</p>
       </div>
     </div>
   </div>

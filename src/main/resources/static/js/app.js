@@ -26,6 +26,7 @@ let state = {
 // Application Bootstrap
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
+  initAuthUI();
   setupModals();
   refreshAllData();
 
@@ -33,6 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     refreshAllData(true);
   }, 12000);
+
+  // Close profile dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('user-profile-dropdown');
+    const authSlot = document.getElementById('user-auth-slot');
+    if (dropdown && dropdown.classList.contains('active')) {
+      if (!dropdown.contains(e.target) && !authSlot.contains(e.target)) {
+        dropdown.classList.remove('active');
+      }
+    }
+  });
 });
 
 // Navigation Controller
@@ -1119,3 +1131,288 @@ function formatDate(dateStr) {
     return dateStr;
   }
 }
+
+// ===================================================================
+// AUTHENTICATION & USER PROFILE MANAGEMENT
+// ===================================================================
+
+const DEFAULT_AUTH_USER = {
+  name: 'Mahilesh',
+  email: 'magilesh07@gmail.com',
+  role: 'Workshop Manager',
+  badge: 'SECE-060',
+  provider: 'google'
+};
+
+function getStoredUser() {
+  const stored = localStorage.getItem('garagedesk_user');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      return DEFAULT_AUTH_USER;
+    }
+  }
+  return DEFAULT_AUTH_USER;
+}
+
+function setStoredUser(user) {
+  if (user) {
+    localStorage.setItem('garagedesk_user', JSON.stringify(user));
+  } else {
+    localStorage.removeItem('garagedesk_user');
+  }
+  initAuthUI();
+}
+
+function initAuthUI() {
+  const user = getStoredUser();
+  const slot = document.getElementById('user-auth-slot');
+  if (!slot) return;
+
+  if (user) {
+    const initial = user.name ? user.name.charAt(0).toUpperCase() : 'M';
+    slot.innerHTML = `
+      <div class="user-profile-pill" onclick="toggleProfileDropdown()" title="Click to view profile & switch roles">
+        <div class="user-avatar-wrap">
+          <div class="user-avatar-small">${initial}</div>
+          <span class="user-status-dot"></span>
+        </div>
+        <div class="user-meta-text">
+          <span class="user-meta-name">
+            ${user.name}
+            ${user.provider === 'google' ? '<span title="Google Verified" style="font-size:11px;">✨</span>' : ''}
+          </span>
+          <span class="user-meta-role">${user.role}</span>
+        </div>
+        <span class="user-chevron">▾</span>
+      </div>
+    `;
+
+    // Update Dropdown details
+    const dropAvatar = document.getElementById('dropdown-user-avatar');
+    const dropName = document.getElementById('dropdown-user-name');
+    const dropEmail = document.getElementById('dropdown-user-email');
+    const dropRole = document.getElementById('dropdown-user-role');
+
+    if (dropAvatar) dropAvatar.textContent = initial;
+    if (dropName) dropName.textContent = user.name;
+    if (dropEmail) dropEmail.textContent = user.email || 'user@garagedesk.com';
+    if (dropRole) {
+      dropRole.textContent = user.role;
+      dropRole.className = `role-badge ${getRoleBadgeClass(user.role)}`;
+    }
+
+    // Update active role switcher buttons
+    document.querySelectorAll('.role-switch-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    if (user.role.includes('Manager')) document.getElementById('role-btn-manager')?.classList.add('active');
+    else if (user.role.includes('Advisor')) document.getElementById('role-btn-advisor')?.classList.add('active');
+    else if (user.role.includes('Mechanic')) document.getElementById('role-btn-mechanic')?.classList.add('active');
+    else if (user.role.includes('Inspector') || user.role.includes('QC')) document.getElementById('role-btn-inspector')?.classList.add('active');
+
+  } else {
+    slot.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="openAuthModal('signin')">
+        <span>🔐 Sign In / Register</span>
+      </button>
+    `;
+  }
+}
+
+function getRoleBadgeClass(role) {
+  if (!role) return 'role-manager';
+  if (role.includes('Manager')) return 'role-manager';
+  if (role.includes('Advisor')) return 'role-advisor';
+  if (role.includes('Mechanic')) return 'role-mechanic';
+  if (role.includes('Inspector') || role.includes('QC')) return 'role-inspector';
+  return 'role-manager';
+}
+
+function toggleProfileDropdown() {
+  const dropdown = document.getElementById('user-profile-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('active');
+  }
+}
+
+function closeProfileDropdown() {
+  const dropdown = document.getElementById('user-profile-dropdown');
+  if (dropdown) {
+    dropdown.classList.remove('active');
+  }
+}
+
+function openAuthModal(tab = 'signin') {
+  closeProfileDropdown();
+  switchAuthTab(tab);
+  openModal('modal-auth');
+}
+
+function switchAuthTab(tab) {
+  const btnSignin = document.getElementById('tab-btn-signin');
+  const btnRegister = document.getElementById('tab-btn-register');
+  const formSignin = document.getElementById('form-signin');
+  const formRegister = document.getElementById('form-register');
+
+  if (tab === 'signin') {
+    btnSignin.classList.add('active');
+    btnRegister.classList.remove('active');
+    formSignin.style.display = 'block';
+    formRegister.style.display = 'none';
+  } else {
+    btnRegister.classList.add('active');
+    btnSignin.classList.remove('active');
+    formRegister.style.display = 'block';
+    formSignin.style.display = 'none';
+  }
+}
+
+function handleSignInSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('signin-email').value.trim();
+  
+  let role = 'Workshop Manager';
+  let name = 'Mahilesh';
+
+  if (email.includes('advisor')) {
+    role = 'Service Advisor';
+    name = 'Arun Service Advisor';
+  } else if (email.includes('mechanic')) {
+    role = 'Master Mechanic';
+    name = 'Rajesh Kumar (Lead Tech)';
+  } else if (email.includes('qc') || email.includes('inspector')) {
+    role = 'Quality Inspector';
+    name = 'Priya Supervisor';
+  } else if (email.includes('@')) {
+    const prefix = email.split('@')[0];
+    name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+
+  const user = {
+    name: name,
+    email: email,
+    role: role,
+    badge: 'EMP-' + Math.floor(100 + Math.random() * 900),
+    provider: 'email'
+  };
+
+  setStoredUser(user);
+  closeModal('modal-auth');
+  showToast(`👋 Welcome back, ${name}! Signed in as ${role}.`, 'success');
+}
+
+function handleRegisterSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const badge = document.getElementById('reg-badge').value.trim();
+  const role = document.getElementById('reg-role').value;
+  const pwd = document.getElementById('reg-password').value;
+  const pwdConfirm = document.getElementById('reg-confirm-password').value;
+
+  if (pwd !== pwdConfirm) {
+    showToast('⚠️ Passwords do not match! Please check.', 'error');
+    return;
+  }
+
+  const user = {
+    name: name,
+    email: email,
+    role: role,
+    badge: badge,
+    provider: 'registered'
+  };
+
+  setStoredUser(user);
+  closeModal('modal-auth');
+  showToast(`🎉 Registration successful! Welcome to Workshop OS, ${name} (${role})!`, 'success');
+}
+
+function openGoogleAuthModal() {
+  closeModal('modal-auth');
+  openModal('modal-google-auth');
+}
+
+function confirmGoogleSignIn(name, email, role) {
+  closeModal('modal-google-auth');
+  const user = {
+    name: name,
+    email: email,
+    role: role || 'Workshop Manager',
+    badge: 'GOOGLE-OAUTH',
+    provider: 'google'
+  };
+  setStoredUser(user);
+  showToast(`🚀 Authenticated via Google as ${name} (${email})!`, 'success');
+}
+
+function openCustomGooglePrompt() {
+  const customEmail = prompt('Enter your Google work or personal email address:', 'mahilesh.sece@gmail.com');
+  if (customEmail && customEmail.includes('@')) {
+    const rawName = customEmail.split('@')[0];
+    const cleanName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    confirmGoogleSignIn(cleanName, customEmail, 'Workshop Manager');
+  }
+}
+
+function quickFillCredentials(roleKey) {
+  const emailInput = document.getElementById('signin-email');
+  const pwdInput = document.getElementById('signin-password');
+
+  if (roleKey === 'manager') {
+    emailInput.value = 'mahilesh@garagedesk.com';
+    pwdInput.value = 'garage2026';
+    showToast('Filled Workshop Manager credentials', 'info');
+  } else if (roleKey === 'advisor') {
+    emailInput.value = 'advisor.arun@garagedesk.com';
+    pwdInput.value = 'advisor123';
+    showToast('Filled Service Advisor credentials', 'info');
+  } else if (roleKey === 'mechanic') {
+    emailInput.value = 'mechanic.rajesh@garagedesk.com';
+    pwdInput.value = 'mechanic123';
+    showToast('Filled Master Mechanic credentials', 'info');
+  } else if (roleKey === 'inspector') {
+    emailInput.value = 'qc.priya@garagedesk.com';
+    pwdInput.value = 'qcsecure2026';
+    showToast('Filled Quality Inspector credentials', 'info');
+  }
+
+  emailInput.style.borderColor = 'var(--accent-cyan)';
+  setTimeout(() => { emailInput.style.borderColor = ''; }, 1000);
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+function switchActiveRole(newRole) {
+  const user = getStoredUser();
+  if (user) {
+    user.role = newRole;
+    setStoredUser(user);
+    closeProfileDropdown();
+    showToast(`🔄 Active role switched to: ${newRole}`, 'info');
+  }
+}
+
+function handleLogout() {
+  closeProfileDropdown();
+  setStoredUser(null);
+  showToast('🔒 Signed out successfully. Click "Sign In" anytime!', 'info');
+}
+
+function showForgotPasswordToast(e) {
+  e.preventDefault();
+  showToast('📧 Password reset instructions dispatched to your registered address.', 'info');
+}
+
