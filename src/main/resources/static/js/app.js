@@ -1173,7 +1173,7 @@ function initAuthUI() {
   if (user) {
     const initial = user.name ? user.name.charAt(0).toUpperCase() : 'M';
     slot.innerHTML = `
-      <div class="user-profile-pill" onclick="toggleProfileDropdown()" title="Click to view profile & switch roles">
+      <div class="user-profile-pill" onclick="toggleProfileDropdown(event)" title="Click to view profile, switch roles, or manage account">
         <div class="user-avatar-wrap">
           <div class="user-avatar-small">${initial}</div>
           <span class="user-status-dot"></span>
@@ -1230,7 +1230,11 @@ function getRoleBadgeClass(role) {
   return 'role-manager';
 }
 
-function toggleProfileDropdown() {
+function toggleProfileDropdown(e) {
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
   const dropdown = document.getElementById('user-profile-dropdown');
   if (dropdown) {
     dropdown.classList.toggle('active');

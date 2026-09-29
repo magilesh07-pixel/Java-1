@@ -1213,7 +1213,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 242, 254, 0.15);
-  z-index: 1000;
+  z-index: 9999;
   padding: 18px;
   display: none;
   animation: dropdownPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);

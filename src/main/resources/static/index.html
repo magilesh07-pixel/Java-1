@@ -97,6 +97,9 @@
           <button class="btn btn-primary btn-sm" id="btn-header-job" onclick="openCreateJobModal()">
             + New Job Card
           </button>
+          <button class="btn btn-secondary btn-sm" id="btn-header-auth" onclick="openAuthModal('signin')" style="border-color:rgba(0, 242, 254, 0.4); color:var(--accent-cyan); font-weight:700;">
+            🔐 Sign In / Register
+          </button>
 
           <!-- User Authentication Profile Slot -->
           <div class="user-auth-slot" id="user-auth-slot"></div>
@@ -104,7 +107,7 @@
       </header>
 
       <!-- User Profile Dropdown Menu -->
-      <div class="user-profile-dropdown" id="user-profile-dropdown">
+      <div class="user-profile-dropdown" id="user-profile-dropdown" onclick="event.stopPropagation()">
         <div class="profile-dropdown-header">
           <div class="profile-avatar-large" id="dropdown-user-avatar">M</div>
           <div class="profile-dropdown-info">
