@@ -105,7 +105,25 @@ CREATE TABLE IF NOT EXISTS bills (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -------------------------------------------------------------------
--- 7. Table: AUDIT_LOGS (Accountability & Audit Trail)
+-- 7. Table: USERS (Authentication & Role-Based Access Control)
+-- -------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(120) NOT NULL,
+    role VARCHAR(40) NOT NULL DEFAULT 'WORKSHOP_MANAGER',
+    staff_badge_number VARCHAR(60),
+    auth_provider VARCHAR(50) DEFAULT 'LOCAL',
+    avatar_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_username (username),
+    INDEX idx_user_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -------------------------------------------------------------------
+-- 8. Table: AUDIT_LOGS (Accountability & Audit Trail)
 -- -------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS audit_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -129,7 +147,16 @@ DELETE FROM job_cards;
 DELETE FROM vehicles;
 DELETE FROM bays;
 DELETE FROM mechanics;
+DELETE FROM users;
 DELETE FROM audit_logs;
+
+-- Seed Authenticated Users (Workshop Team & Clients)
+INSERT INTO users (id, username, email, password, full_name, role, staff_badge_number, auth_provider) VALUES
+(1, 'admin', 'admin@garagedesk.com', 'garage2026', 'Mahilesh', 'WORKSHOP_MANAGER', 'SECE-060', 'LOCAL'),
+(2, 'client', 'client@garagedesk.com', 'client123', 'Priya Sharma', 'CLIENT', 'CLIENT-01', 'LOCAL'),
+(3, 'advisor', 'advisor@garagedesk.com', 'advisor123', 'Arun Kumar', 'SERVICE_ADVISOR', 'ADV-01', 'LOCAL'),
+(4, 'mechanic', 'mechanic@garagedesk.com', 'mech123', 'Rajesh Kumar', 'MECHANIC', 'MCH-01', 'LOCAL'),
+(5, 'inspector', 'inspector@garagedesk.com', 'qc123', 'Suresh Babu', 'QUALITY_INSPECTOR', 'QC-01', 'LOCAL');
 
 -- Seed Service Bays
 INSERT INTO bays (id, bay_number, bay_type, status) VALUES

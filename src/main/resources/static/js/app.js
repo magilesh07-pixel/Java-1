@@ -1432,7 +1432,7 @@ function showForgotPasswordToast(e) {
   showToast('📧 Password reset instructions dispatched to your registered address.', 'info');
 }
 
-// Split-Screen Reference Login Handlers
+// Split-Screen Reference Login Handlers (Real Backend Connected)
 function toggleSplitAuthCard(cardType) {
   const loginCard = document.getElementById('split-login-card');
   const regCard = document.getElementById('split-register-card');
@@ -1445,90 +1445,172 @@ function toggleSplitAuthCard(cardType) {
   }
 }
 
-function quickSplitFill(roleKey) {
-  let user = {
-    name: 'Mahilesh',
-    email: 'admin@garagedesk.com',
-    role: 'Workshop Manager',
-    badge: 'SECE-060',
-    provider: 'email'
-  };
+async function quickSplitFill(roleKey) {
+  const usernameInput = document.getElementById('escrow-username');
+  const pwdInput = document.getElementById('escrow-password');
 
   if (roleKey === 'admin') {
-    user.name = 'Mahilesh';
-    user.email = 'admin@garagedesk.com';
-    user.role = 'Workshop Manager';
-  } else if (roleKey === 'advisor') {
-    user.name = 'Arun Kumar';
-    user.email = 'advisor@garagedesk.com';
-    user.role = 'Service Advisor';
-  } else if (roleKey === 'mechanic') {
-    user.name = 'Rajesh Kumar';
-    user.email = 'mechanic@garagedesk.com';
-    user.role = 'Master Mechanic';
+    usernameInput.value = 'admin@garagedesk.com';
+    pwdInput.value = 'garage2026';
   } else if (roleKey === 'client') {
-    user.name = 'Priya Sharma';
-    user.email = 'priya.sharma@gmail.com';
-    user.role = 'Client User';
+    usernameInput.value = 'client@garagedesk.com';
+    pwdInput.value = 'client123';
+  } else if (roleKey === 'advisor') {
+    usernameInput.value = 'advisor@garagedesk.com';
+    pwdInput.value = 'advisor123';
+  } else if (roleKey === 'mechanic') {
+    usernameInput.value = 'mechanic@garagedesk.com';
+    pwdInput.value = 'mech123';
   }
 
-  setStoredUser(user);
-  showToast(`👋 Signed in as ${user.name} (${user.role})!`, 'success');
+  // Trigger login automatically against real backend
+  await handleSplitLogin(new Event('submit'));
 }
 
-function handleSplitLogin(e) {
-  e.preventDefault();
-  const input = document.getElementById('escrow-username').value.trim();
-  let role = 'Workshop Manager';
-  let name = 'Mahilesh';
+async function handleSplitLogin(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const usernameOrEmail = document.getElementById('escrow-username').value.trim();
+  const password = document.getElementById('escrow-password').value.trim();
 
-  if (input.toLowerCase().includes('client')) {
-    role = 'Client User';
-    name = 'Priya Sharma';
-  } else if (input.toLowerCase().includes('advisor')) {
-    role = 'Service Advisor';
-    name = 'Arun Kumar';
-  } else if (input.toLowerCase().includes('mech')) {
-    role = 'Master Mechanic';
-    name = 'Rajesh Kumar';
-  } else if (input.includes('@')) {
-    const raw = input.split('@')[0];
-    name = raw.charAt(0).toUpperCase() + raw.slice(1);
+  try {
+    showToast('Authenticating with backend...', 'info');
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernameOrEmail, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Invalid username or password');
+    }
+
+    const authData = data.data;
+    const user = {
+      name: authData.user.fullName,
+      email: authData.user.email,
+      role: formatRoleName(authData.user.role),
+      badge: authData.user.staffBadgeNumber || 'SECE-060',
+      token: authData.token,
+      provider: authData.user.authProvider
+    };
+
+    setStoredUser(user);
+    showToast(`🚀 Authenticated! Welcome, ${user.name} (${user.role}).`, 'success');
+  } catch (err) {
+    showToast(`❌ Authentication failed: ${err.message}`, 'error');
   }
-
-  const user = {
-    name: name,
-    email: input.includes('@') ? input : input + '@garagedesk.com',
-    role: role,
-    badge: 'EMP-' + Math.floor(100 + Math.random() * 900),
-    provider: 'email'
-  };
-
-  setStoredUser(user);
-  showToast(`🚀 Welcome back, ${name}! Signed in to GarageDesk.`, 'success');
 }
 
-function handleSplitRegister(e) {
+async function handleSplitRegister(e) {
   e.preventDefault();
-  const name = document.getElementById('escrow-reg-name').value.trim();
+  const fullName = document.getElementById('escrow-reg-name').value.trim();
   const email = document.getElementById('escrow-reg-email').value.trim();
-  const role = document.getElementById('escrow-reg-role').value;
+  const roleInput = document.getElementById('escrow-reg-role').value;
+  const password = document.getElementById('escrow-reg-pwd').value.trim();
 
-  const user = {
-    name: name,
-    email: email,
-    role: role,
-    badge: 'SECE-060',
-    provider: 'registered'
-  };
+  const username = email.includes('@') ? email.split('@')[0] : email;
 
-  setStoredUser(user);
-  showToast(`🎉 Registration complete! Welcome to GarageDesk, ${name}!`, 'success');
+  try {
+    showToast('Registering user in database...', 'info');
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username,
+        email: email,
+        password: password,
+        fullName: fullName,
+        role: mapRoleToEnum(roleInput),
+        staffBadgeNumber: 'SECE-' + Math.floor(100 + Math.random() * 900)
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Registration failed');
+    }
+
+    const authData = data.data;
+    const user = {
+      name: authData.user.fullName,
+      email: authData.user.email,
+      role: formatRoleName(authData.user.role),
+      badge: authData.user.staffBadgeNumber,
+      token: authData.token,
+      provider: authData.user.authProvider
+    };
+
+    setStoredUser(user);
+    showToast(`🎉 Account created in DB! Welcome, ${user.name}!`, 'success');
+  } catch (err) {
+    showToast(`❌ Registration error: ${err.message}`, 'error');
+  }
+}
+
+async function confirmGoogleSignIn(name, email, role) {
+  closeModal('modal-google-auth');
+  try {
+    showToast('Authenticating with Google OAuth...', 'info');
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        name: name,
+        googleId: 'goog_' + Date.now(),
+        avatarUrl: '',
+        role: mapRoleToEnum(role)
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Google authentication failed');
+    }
+
+    const authData = data.data;
+    const user = {
+      name: authData.user.fullName,
+      email: authData.user.email,
+      role: formatRoleName(authData.user.role),
+      badge: authData.user.staffBadgeNumber || 'GOOGLE-OAUTH',
+      token: authData.token,
+      provider: 'google'
+    };
+
+    setStoredUser(user);
+    showToast(`🚀 Authenticated via Google OAuth as ${user.name}!`, 'success');
+  } catch (err) {
+    showToast(`❌ Google Auth error: ${err.message}`, 'error');
+  }
+}
+
+function mapRoleToEnum(roleStr) {
+  if (!roleStr) return 'WORKSHOP_MANAGER';
+  if (roleStr.includes('Manager') || roleStr.includes('Admin')) return 'WORKSHOP_MANAGER';
+  if (roleStr.includes('Advisor')) return 'SERVICE_ADVISOR';
+  if (roleStr.includes('Mechanic') || roleStr.includes('Technician')) return 'MECHANIC';
+  if (roleStr.includes('Inspector') || roleStr.includes('QC')) return 'QUALITY_INSPECTOR';
+  if (roleStr.includes('Client') || roleStr.includes('Customer')) return 'CLIENT';
+  return 'WORKSHOP_MANAGER';
+}
+
+function formatRoleName(roleEnum) {
+  switch (roleEnum) {
+    case 'WORKSHOP_MANAGER': return 'Workshop Manager';
+    case 'SERVICE_ADVISOR': return 'Service Advisor';
+    case 'MECHANIC': return 'Chief Mechanic';
+    case 'QUALITY_INSPECTOR': return 'Quality Inspector';
+    case 'CLIENT': return 'Client User';
+    default: return roleEnum || 'Workshop Manager';
+  }
 }
 
 function showSplitLogin() {
   closeProfileDropdown();
   setStoredUser(null);
 }
+
 
 

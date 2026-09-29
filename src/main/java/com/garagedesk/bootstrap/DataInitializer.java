@@ -21,23 +21,36 @@ public class DataInitializer implements CommandLineRunner {
     private final MechanicRepository mechanicRepository;
     private final JobCardRepository jobCardRepository;
     private final ServiceItemRepository serviceItemRepository;
+    private final UserRepository userRepository;
 
     public DataInitializer(VehicleRepository vehicleRepository,
                            BayRepository bayRepository,
                            MechanicRepository mechanicRepository,
                            JobCardRepository jobCardRepository,
-                           ServiceItemRepository serviceItemRepository) {
+                           ServiceItemRepository serviceItemRepository,
+                           UserRepository userRepository) {
         this.vehicleRepository = vehicleRepository;
         this.bayRepository = bayRepository;
         this.mechanicRepository = mechanicRepository;
         this.jobCardRepository = jobCardRepository;
         this.serviceItemRepository = serviceItemRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public void run(String... args) {
+        // Ensure real authenticated users are always seeded
+        if (userRepository.count() == 0) {
+            userRepository.save(new User("admin", "admin@garagedesk.com", "garage2026", "Mahilesh", UserRole.WORKSHOP_MANAGER, "SECE-060", "LOCAL"));
+            userRepository.save(new User("client", "client@garagedesk.com", "client123", "Priya Sharma", UserRole.CLIENT, "CLIENT-01", "LOCAL"));
+            userRepository.save(new User("advisor", "advisor@garagedesk.com", "advisor123", "Arun Kumar", UserRole.SERVICE_ADVISOR, "ADV-01", "LOCAL"));
+            userRepository.save(new User("mechanic", "mechanic@garagedesk.com", "mech123", "Rajesh Kumar", UserRole.MECHANIC, "MCH-01", "LOCAL"));
+            userRepository.save(new User("inspector", "inspector@garagedesk.com", "qc123", "Suresh Babu", UserRole.QUALITY_INSPECTOR, "QC-01", "LOCAL"));
+            log.info("Seeded 5 Authenticated User Accounts (admin, client, advisor, mechanic, inspector).");
+        }
+
         if (bayRepository.count() > 0) {
-            log.info("Database already seeded. Skipping initialization.");
+            log.info("Database already seeded. Skipping bay and vehicle initialization.");
             return;
         }
 
@@ -81,7 +94,6 @@ public class DataInitializer implements CommandLineRunner {
         JobCard job2 = new JobCard(veh2, "Periodic 20,000 km Service & AC inspection", "AC cooling is slightly low");
         job2.setStatus(JobStatus.WAITING);
         jobCardRepository.save(job2);
-        log.info("Seeded WAITING JobCard for vehicle TN-37-CK-9912.");
 
         log.info("--- GarageDesk Data Seeding Completed Successfully ---");
     }
